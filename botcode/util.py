@@ -16,6 +16,10 @@ def question(q):
     request = ai.text_request()
 
     request.query = q
+
+    if request.query == "exit":
+        return 0
+
     response = request.getresponse()
 
     string = response.read()
@@ -157,10 +161,12 @@ def scheduling(timedate, employees, name):
     else:
         print("Available")
 
+    return (name, (s, e), d)
+
 
 ####################################################################################################
 
-class Employees():
+class Employees:
     def __init__(self):
 
         self.day = {str(i): list() for i in range(1, 32)}
@@ -170,10 +176,8 @@ class Employees():
         self.person = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                        'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
 
-    # working_at={}
-    # employees = {}
-
-
+        # working_at={}
+        # employees = {}
 
     def create_person(self, employees, working_at, name='', id='', job='', team=[], mail='', working_on='', updates=1,
                       office=''):
@@ -216,24 +220,103 @@ class Employees():
 def put_data():
     working_at = {}
     employees = {}
+
     e = Employees()
 
-    employees, working_at = e.create_person(employees, working_at, 'Amy', 'software_developer', ['Jack'],
-                                            working_on='project Y')
-    employees = e.insert_time(employees, "Amy", 2017, 6, 24, '10:00:00', '12:00:00')
-    employees, working_at = e.create_person(employees, working_at, 'Carl', 'software_developer', ['Jack'],
-                                            working_on='project Y')
-    employees = e.insert_time(employees, "Amy", 2017, 6, 24, '20:00:00', '22:00:00')
+    employees, working_at = e.create_person(employees, working_at, name='manuel', job='software_developer',
+                                            id=184508683, team=['norman', 'george'], working_on='project_Y')
+    employees = e.insert_time(employees, "manuel", 2017, 6, 24, '10:00:00', '12:00:00')
+
+    employees, working_at = e.create_person(employees, working_at, name='george', job='data_scientist',
+                                            team=['norman', 'manuel'],
+                                            id=417193312, working_on='project_Y')
+    employees = e.insert_time(employees, "george", 2017, 6, 24, '20:00:00', '22:00:00')
+
+    employees, working_at = e.create_person(employees, working_at, name='norman', job='robotic_engineer',
+                                            team=['george', 'manuel'],
+                                            id=431333715, working_on='project_Y')
+    employees = e.insert_time(employees, "norman", 2017, 6, 24, '18:00:00', '20:00:00')
 
     return employees
 
 
-if __name__ == "__main__":
-    questions = ["Is Amy free today between 12:00 and 20:00?"]
-    data = question(questions)
-    name = data["result"]["parameters"]["given-name"]
-    date_time = data["result"]["parameters"]["date-time"]
-    timedate = dateTime(date_time)
-    employees = put_data()
+##########################################################################################################
 
+# -*- coding: UTF-8 -*-
+
+def time(data, employees, name):
+    date_time = data["result"]["parameters"]["date-time"]
+
+    timedate = dateTime(date_time)
     scheduling(timedate, employees, name)
+
+    return None
+
+
+def get_working_on(data, employees):
+    parameters = data["result"]["parameters"]
+    name = parameters['given-name']
+    project = parameters['project']
+    if name == '' and not project == '':
+        return working_at[project]
+    if not name == '' and project == '':
+        return employees[name]['working_on']
+
+
+def look_for_specialist(data, employees):
+    parameters = data["result"]["parameters"]
+    job = parameters['job']
+    candidates = []
+    for person in employees:
+        if employees[person]['job'] == job:
+            candidates.append(employees[person]['name'])
+    # return candidates
+    for cand in candidates:
+        try_id = employees[cand]['id']
+        wip_id = try_id
+        waiting = 1
+        print("ID da provare")
+        print(try_id)
+        print("persona che provo")
+        print(employees[cand]['name'])
+
+        list_id.append(try_id)
+        print(list_id)
+
+        self.sekretai.sendMessage(try_id, "Hello! Someone needs your assistance. Are you available?")
+        print("messaggio inviato")
+
+
+def place(data, employees):
+    parameters = data["result"]["parameters"]
+    name = parameters['given-name']
+    return employees[name]['office']
+
+
+def action_node(action, data, employees, name):
+    if action == 'working_on':
+        return get_working_on(data, employees)
+    if action == 'look_for_specialist':
+        return look_for_specialist(data, employees)
+    if action == 'place':
+        return place(data, employees)
+    if action == 'check_free_time':
+        return time(data, employees, name)
+    else:
+        return None
+
+
+        # while(1):
+        #    ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
+        #    request = ai.text_request()
+        #    request.query = input("Type here")
+        #    if request.query == "exit":
+        #        break
+        #    response = request.getresponse()
+        #    reply = response.read()
+        #    parsed_json = json.loads(reply)
+        #    action=parsed_json['result']['action']
+        #    parameters=parsed_json['result']['parameters']
+        #    response=parsed_json['result']['fulfillment']['speech']
+        #    print(response)
+        #    print(action_node(action,parameters))
