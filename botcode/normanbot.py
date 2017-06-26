@@ -41,14 +41,15 @@ def insert_time(person, year, month, day, time_start, time_end):
 def query_DB():
     working_at = {}
     employee = {}
-    working_at, employee, Amy = create_person(working_at, employee, 'Amy', 'developer', ['Amy', 'Carl', 'Marc'],
-                                              working_on='project Y', office="4C", id='45571984')
+    working_at, employee, Amy = create_person(working_at, employee, 'Amy', 'developer', ['Carl', 'Marc'],
+                                              working_on='project Turing', office="4C", id='45571984')
     insert_time(Amy, 2017, 6, 28, '10:00:00', '12:00:00')
-    working_at, employee, _ = create_person(working_at, employee, 'Carl', 'designer', ['Amy', 'Carl', 'Marc'],
-                                            working_on='project Y', office="00", id='173644279')
+    working_at, employee, _ = create_person(working_at, employee, 'Carl', 'designer', ['Amy', 'Marc'],
+                                            working_on='project Fermi', office="00", id='173644279')
     working_at, employee, _ = create_person(working_at, employee, 'Marc', 'data scientist', id='184508683',
-                                            team=['Amy'], office="31")
-    #  working_at, employee, _ = create_person(working_at, employee, 'Kinker', 'professional API user', team=['Amy', 'Carl', 'Marc'], working_on='project Y', office="05", id='435992141')
+                                            team=['Amy', 'Carl'], office="31")
+    # working_at, employee, _ = create_person(working_at, employee, 'Kinker', 'professional API user', team=['Amy',
+    # 'Carl', 'Marc'], working_on='project Y', office="05", id='435992141')
     return employee, working_at
 
 
@@ -97,13 +98,13 @@ def query_employee(message_offset_id, person, bot_obj, query_msg=None):
             KeyboardButton(text="no", callback_data="no")
         ], ])
     if not query_msg:
-        query_msg = "Hello! some truck driver needs your assistance. Are you available?"
+        query_msg = "{} needs a {}. Are you available?".format("Carl", employee[person]['job'])
     bot_obj.sendMessage(employee[person]['id'], query_msg, reply_markup=keyboard)
     employee_answer, message_offset_id = get_one_message(message_offset_id)
 
     if "callback_query" in employee_answer:
         markup = ReplyKeyboardRemove()
-        bot_obj.sendMessage(employee[person]['id'], "Thanks bro", reply_markup=markup)
+        bot_obj.sendMessage(employee[person]['id'], "Ok, got it", reply_markup=markup)
         if employee_answer["callback_query"]["data"] == "yes":
             his_answer = emp
     else:
@@ -186,42 +187,39 @@ while True:
 
         last_id, result = look_for_specialist(sekretai, last_id, parameters, querier=asker_name)
         if result:
-            sekretai.sendMessage(msg['message']['from']['id'], "THE FUCKER IS " + str(result))
+            sekretai.sendMessage(msg['message']['from']['id'], str(result) + " is available.")
         else:
-            sekretai.sendMessage(msg['message']['from']['id'], "I'm sorry sir i didn't find any good person")
+            sekretai.sendMessage(msg['message']['from']['id'], "I'm sorry, I didn't find any good match.")
     elif action == 'place':
         place_id = place(parameters)
-        sekretai.sendMessage(msg['message']['from']['id'], "he is at {}".format(place_id))
+        sekretai.sendMessage(msg['message']['from']['id'], "The office is: {}".format(place_id))
     elif action == 'booking':
         asker_tid = msg['message']['from']['id']
         asker_name = whosdisguy(asker_tid)['name']
         team = employee[asker_name]['team']
-        rspmsg = "Room 1392 was booked"
-        booking_time = parameters['time']
+        booking_time = ":".join(parameters['time'].split(":")[:-1])
         for other_employee in team:
+            his_name = employee[other_employee]['name']
             was_he_avail, last_id = query_employee(last_id, other_employee, sekretai,
-                                                   query_msg="Are you available at {} for a meeting?".format(
-                                                       booking_time))
+                                                   query_msg="Hello {}, are you available at {} for a meeting organized by {}?".format(
+                                                       his_name, booking_time, asker_name))
             if not was_he_avail:
-                rspmsg = "{} was not avail at {}, [{}] were avail; booking not possible; do you want to move to".format(
-                    other_employee, booking_time, " ".join((e for e in employee if e != other_employee)), )
                 break
         booking_time = parameters['time'].split(":")
         # add days
         booking_time[1] = str(min(59, int(booking_time[1]) + 25))
-        booking_time = ":".join(booking_time)
+        booking_time = ":".join(booking_time[:-1])
 
         agreed, last_id = query_employee(last_id, asker_name, sekretai,
-                                         query_msg="pospone the meeting at {}?".format(booking_time))
-        rspmsg = "cheers mate"
+                                         query_msg="{} was not available. Do you want to reschedule the meeting to {}?".format(other_employee, booking_time))
+        rspmsg = "The meeting was successfully organized, Room 3141 is booked for you at that time."
         for other_employee in team:
-            was_he_avail, last_id = query_employee(last_id, other_employee, sekretai, booking_time)
+            was_he_avail, last_id = query_employee(last_id, other_employee, sekretai,
+                                                   "what about meeting at {}?".format(booking_time))
             if not was_he_avail:
-                rspmsg = "{} was not avail at {}, [{}] were avail; booking not possible;".format(
-                    other_employee,
-                    booking_time,
-                    " ".join((e for e in employee if e != other_employee)), )
+                rspmsg = "{} is not available at {}, please suggest another time.".format(other_employee, booking_time,)
                 break
+        sekretai.sendMessage(asker_tid, rspmsg)
         for other_employee in team:
             sekretai.sendMessage(employee[other_employee]['id'], rspmsg)
     else:
