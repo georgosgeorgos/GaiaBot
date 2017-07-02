@@ -93,11 +93,10 @@ def dateTime(date_time):
 
 
 def scheduling(timedate, employees, name):
+    
     '''
     timedate : date and time to check
     Amy : object with person data
-    
-    
     '''
 
     # select date and time unavailable
@@ -137,7 +136,7 @@ def scheduling(timedate, employees, name):
 
         # check if the unavailable period intersect my request
 
-        if timedate["start"]["time"]["hour"] > work_hour_start and timedate["end"]["time"]["hour"] < work_hour_end:
+        if timedate["start"]["time"]["hour"] >= work_hour_start and timedate["end"]["time"]["hour"] <= work_hour_end:
             c = False
 
         if timedate["start"]["time"]["hour"] == work_hour_end:
@@ -158,8 +157,6 @@ def scheduling(timedate, employees, name):
 
     if c == False:
         print("No available")
-    else:
-        print("Available")
 
     return (name, (s, e), d)
 
@@ -167,6 +164,7 @@ def scheduling(timedate, employees, name):
 ####################################################################################################
 
 class Employees:
+
     def __init__(self):
 
         self.day = {str(i): list() for i in range(1, 32)}
@@ -180,12 +178,30 @@ class Employees:
         # employees = {}
 
     def create_person(self, employees, working_at, name='', id='', job='', team=[], mail='', working_on='', updates=1,
-                      office=''):
+                      office='', t = 1):
 
         # global working_at
 
         pers = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                 'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
+
+
+        if t == 1:
+
+            print("-Data new employees")
+            print("\n")
+
+            if name == '':        print('  insert name: '); name = input();
+            if id   == '':        print('  insert id: '  ); id = input();
+            if job  == '':        print('  insert job: ' ); job = input();
+            if team == []:        print('  insert team: '); team = input().split();
+            if mail == '':        print('  insert mail: '); mail = input();
+            if working_on == '':  print('  insert working_on: '); working_on = input();
+            if office == '':      print('  insert office: '); office = input();
+
+            print("End insertion data new employees-")
+            print("\n")
+
 
         pers['name'] = name
         pers['id'] = id
@@ -224,20 +240,20 @@ def put_data():
     e = Employees()
 
     employees, working_at = e.create_person(employees, working_at, name='manuel', job='software_developer',
-                                            id=184508683, team=['norman', 'george'], working_on='project_Y')
+                                            id=184508683, team=['norman', 'george'], working_on='project_Y', t = 0)
     employees = e.insert_time(employees, "manuel", 2017, 6, 24, '10:00:00', '12:00:00')
 
     employees, working_at = e.create_person(employees, working_at, name='george', job='data_scientist',
                                             team=['norman', 'manuel'],
-                                            id=417193312, working_on='project_Y')
+                                            id=417193312, working_on='project_Y', t = 0)
     employees = e.insert_time(employees, "george", 2017, 6, 24, '20:00:00', '22:00:00')
 
     employees, working_at = e.create_person(employees, working_at, name='norman', job='robotic_engineer',
                                             team=['george', 'manuel'],
-                                            id=431333715, working_on='project_Y')
+                                            id=431333715, working_on='project_Y', t = 0)
     employees = e.insert_time(employees, "norman", 2017, 6, 24, '18:00:00', '20:00:00')
 
-    return employees
+    return employees, working_at
 
 
 ##########################################################################################################

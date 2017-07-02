@@ -47,3 +47,7 @@ debug.log
 
 # Misc
 *.zip
+
+# database
+
+DB_keys
