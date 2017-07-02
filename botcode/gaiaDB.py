@@ -1,28 +1,28 @@
 import pymongo
-import sys
+import util
 import json
-import importlib
-import util; importlib.reload(util)
 
-
-class gaiaDB:
+class gaia_db:
     
     def __init__(self):
 
-        with open("DB_keys") as f:
-            DBKEY = f.read()
-        
+        with open('DB_keys') as f:
+            DBKEY = f.read()[:-1]
+
         self.uri = DBKEY
         self.client = pymongo.MongoClient(self.uri)
-        self.db = client['gaia_database']
+        self.db = self.client['gaia_database']
         try:
             self.db.create_collection(name='employees')
-        except:
-            None
+            print('Collection created\n')
+        except pymongo.errors.CollectionInvalid:
+            print('Collection exists\n')
         self.employees = {}
-        #self.employees = util.put_data()
         self.working_at = {}
-        self.emp = Employees()
+        self.emp = util.Employees()
+
+    def get_db(self):
+        return self.db
         
     def get_employees(self):
         return self.employees
@@ -30,58 +30,68 @@ class gaiaDB:
     def get_working_at(self):
         return self.working_at
         
-    def gaia_create_insert(self):
+    def create_insert(self):
         self.employees, self.working_at = self.emp.create_person(self.employees, self.working_at)
            
-    def gaia_insert(self, users):
+    def insert(self, users):
         for u in users:
             try:
                 self.db.employees.insert_one(users[u])
-                print("Adding", u)
-            except:
-                continue
+                print('Adding', u, '\n')
+            except pymongo.errors.DuplicateKeyError:
+                print('Employee', u, 'yet present\n')
         
                 
-    def gaia_remove(self, value):
+    def remove(self, value):
         return self.db.employees.remove({'name': value}, 1)
                 
-    def gaia_find_name(self, value):
+    def find_name(self, value):
         return self.db.employees.find_one({'name': value})
     
-    def gaia_find_job(self, value):
+    def find_job(self, value):
         return self.db.employees.find_one({'job': value})['name']
     
-    def gaia_find_work(self, d):
+    def find_work(self, d):
         return d['working_on']
     
-    def gaia_meeting(self, list_time_data, name):
+    def meeting(self, list_time_data, name):
         timedata = util.dateTime(list_time_data)
         util.scheduling(timedata, self.employees, name)  # change
         ## write on calendar
 
 
+##############################################################################
 
 
+def go():
 
-gaia_db = gaiaDB()
+    gaia = gaia_db()
 
-users, working_at = util.put_data()
+    ### create fake employees ###
+    employees, working_at = util.put_data()
 
-gaia_db.gaia_insert(users)
+    ### add employees to database ###
+    gaia.insert(employees)
 
-
-gaia_db.gaia_find_job("data_scientist")
-
-
-george = db.employees.find_one({'name': 'george'})
-norman = db.employees.find_one({'name': 'norman'})
-manuel = db.employees.find_one({'name': 'manuel'})
-
-george["free_time"]["2017"]["6"]["24"]
-norman["free_time"]["2017"]["6"]["24"]
-manuel["free_time"]["2017"]["6"]["24"]
+    ### query database for a job
+    gaia.find_job('data_scientist')
 
 
-timedata = util.dateTime(['2017-06-24', '20:00:00/22:00:00'])
+    ### query database for employee ###
+    george = gaia.find_name('george')
+    norman = gaia.find_name('norman')
+    manuel = gaia.find_name('manuel')
 
-util.scheduling(timedata, employees, 'norman')
+    print('\n')
+    print(george['name'], george['free_time']['2017']['6']['24'])
+    print(norman['name'], norman['free_time']['2017']['6']['24'])
+    print(manuel['name'], manuel['free_time']['2017']['6']['24'])
+    print('\n')
+
+    ### convert date ###
+    timedata = util.dateTime(['2017-06-24', '20:00:00/22:00:00'])
+
+    ### check if employee is free for a meeting at timedate ###
+    util.scheduling(timedata, employees, 'norman')
+
+    print ('all done')

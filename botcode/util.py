@@ -93,7 +93,6 @@ def dateTime(date_time):
 
 
 def scheduling(timedate, employees, name):
-    
     '''
     timedate : date and time to check
     Amy : object with person data
@@ -164,27 +163,25 @@ def scheduling(timedate, employees, name):
 ####################################################################################################
 
 class Employees:
-
     def __init__(self):
 
         self.day = {str(i): list() for i in range(1, 32)}
         self.months = {str(i): copy.deepcopy(self.day) for i in range(1, 13)}
         self.date = {'2017': copy.deepcopy(self.months)}
 
-        self.person = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
+        self.person = {'name': '', '_id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                        'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
 
         # working_at={}
         # employees = {}
 
     def create_person(self, employees, working_at, name='', id='', job='', team=[], mail='', working_on='', updates=1,
-                      office='', t = 1):
+                      office='', t=1):
 
         # global working_at
 
-        pers = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
+        pers = {'name': '', '_id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                 'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
-
 
         if t == 1:
 
@@ -192,8 +189,8 @@ class Employees:
             print("\n")
 
             if name == '':        print('  insert name: '); name = input();
-            if id   == '':        print('  insert id: '  ); id = input();
-            if job  == '':        print('  insert job: ' ); job = input();
+            if id == '':          print('  insert id: '); id = input();
+            if job == '':         print('  insert job: '); job = input();
             if team == []:        print('  insert team: '); team = input().split();
             if mail == '':        print('  insert mail: '); mail = input();
             if working_on == '':  print('  insert working_on: '); working_on = input();
@@ -202,9 +199,8 @@ class Employees:
             print("End insertion data new employees-")
             print("\n")
 
-
         pers['name'] = name
-        pers['id'] = id
+        pers['_id'] = id
         pers['job'] = job
         pers['team'] = team
         pers['mail'] = mail
@@ -240,17 +236,17 @@ def put_data():
     e = Employees()
 
     employees, working_at = e.create_person(employees, working_at, name='manuel', job='software_developer',
-                                            id=184508683, team=['norman', 'george'], working_on='project_Y', t = 0)
+                                            id=184508683, team=['norman', 'george'], working_on='project_Y', t=0)
     employees = e.insert_time(employees, "manuel", 2017, 6, 24, '10:00:00', '12:00:00')
 
     employees, working_at = e.create_person(employees, working_at, name='george', job='data_scientist',
                                             team=['norman', 'manuel'],
-                                            id=417193312, working_on='project_Y', t = 0)
+                                            id=417193312, working_on='project_Y', t=0)
     employees = e.insert_time(employees, "george", 2017, 6, 24, '20:00:00', '22:00:00')
 
     employees, working_at = e.create_person(employees, working_at, name='norman', job='robotic_engineer',
                                             team=['george', 'manuel'],
-                                            id=431333715, working_on='project_Y', t = 0)
+                                            id=431333715, working_on='project_Y', t=0)
     employees = e.insert_time(employees, "norman", 2017, 6, 24, '18:00:00', '20:00:00')
 
     return employees, working_at
