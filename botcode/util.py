@@ -169,7 +169,7 @@ class Employees:
         self.months = {str(i): copy.deepcopy(self.day) for i in range(1, 13)}
         self.date = {'2017': copy.deepcopy(self.months)}
 
-        self.person = {'name': '', '_id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
+        self.person = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                        'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
 
         # working_at={}
@@ -180,7 +180,7 @@ class Employees:
 
         # global working_at
 
-        pers = {'name': '', '_id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
+        pers = {'name': '', 'id': '', 'job': '', 'team': [], 'free_time': copy.deepcopy(self.date),
                 'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
 
         if t == 1:
@@ -200,7 +200,7 @@ class Employees:
             print("\n")
 
         pers['name'] = name
-        pers['_id'] = id
+        pers['id'] = id
         pers['job'] = job
         pers['team'] = team
         pers['mail'] = mail

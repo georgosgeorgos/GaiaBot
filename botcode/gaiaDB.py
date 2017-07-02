@@ -14,9 +14,9 @@ class gaia_db:
         self.db = self.client['gaia_database']
         try:
             self.db.create_collection(name='employees')
-            print('Collection created\n')
+            print('\nCollection created\n')
         except pymongo.errors.CollectionInvalid:
-            print('Collection exists\n')
+            print('\nCollection exists\n')
         self.employees = {}
         self.working_at = {}
         self.emp = util.Employees()
@@ -82,7 +82,7 @@ def go():
     norman = gaia.find_name('norman')
     manuel = gaia.find_name('manuel')
 
-    print('\n')
+
     print(george['name'], george['free_time']['2017']['6']['24'])
     print(norman['name'], norman['free_time']['2017']['6']['24'])
     print(manuel['name'], manuel['free_time']['2017']['6']['24'])
@@ -95,3 +95,8 @@ def go():
     util.scheduling(timedata, employees, 'norman')
 
     print ('all done')
+
+
+### uncomment this to run ###
+
+## go()
