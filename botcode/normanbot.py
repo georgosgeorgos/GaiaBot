@@ -32,12 +32,8 @@ def create_person(working_at, employee, name='', job='', team=[], mail='', worki
 
     employee[name] = copy.deepcopy(pers)
     return working_at, employee, pers
-
-
 def insert_time(person, year, month, day, time_start, time_end):
     person['free_time'][str(year)][str(month)][str(day)].append((str(time_start), str(time_end)))
-
-
 def query_DB():
     working_at = {}
     employee = {}
@@ -117,17 +113,6 @@ def query_employee(message_offset_id, person, bot_obj, query_msg=None):
 def place(parameters):
     name = parameters['given-name']
     return employee[name]['office']
-
-
-def action_node(action, parameters):
-    if action == 'working_on':
-        return get_working_on(parameters)
-    if action == 'look_for_specialist':
-        return look_for_specialist(parameters)
-    if action == 'place':
-        return place(parameters)
-    else:
-        return ''
 
 
 def get_one_message(offset):
