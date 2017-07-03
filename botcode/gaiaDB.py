@@ -8,6 +8,7 @@ class gaia_db:
 
         with open('DB_keys') as f:
             DBKEY = f.read()[:-1]
+        print(DBKEY)
 
         self.uri = DBKEY
         self.client = pymongo.MongoClient(self.uri)
@@ -47,11 +48,11 @@ class gaia_db:
     def find_name(self, value):
         return self.db.employees.find_one({'name': value})
 
-    def find_job(self, value):
-        return self.db.employees.find_one({'job': value})['name']
+    def find_by_tid(self, value):
+        return self.db.employees.find_one({'id': value})
 
-    def find_work(self, d):
-        return d['working_on']
+    def find_by_job(self, value):
+        return self.db.employees.find({'job': value})
 
     def meeting(self, list_time_data, name):
         timedata = util.dateTime(list_time_data)
