@@ -1,9 +1,7 @@
 # -*- coding: UTF-8 -*-
 import pprint
-import sqlite3
 import time
 import json
-
 from telepot.namedtuple import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 
 import gaiaDB
@@ -19,7 +17,6 @@ class Secretary(object):
     def __init__(self, key):
         self.db = gaiaDB.gaia_db()
         self.bot = telepot.Bot(key)
-        self.bot.notifyOnMessage(self.handle_message)
 
         def handle(msg):
             self.handle_message(msg)
@@ -129,11 +126,5 @@ class Secretary(object):
 if __name__ == "__main__":
     with open("api_key") as fin:
         key = fin.read()[:-1]
-    db = sqlite3.connect('database.sqlite')
-    bot = Secretary(key, db)
-    try:
-        bot.spin()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        db.close()
+    bot = Secretary(key)
+    bot.spin()
