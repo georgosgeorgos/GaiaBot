@@ -2,8 +2,8 @@ import pymongo
 import util
 import json
 
+
 class gaia_db:
-    
     def __init__(self):
 
         with open('DB_keys') as f:
@@ -23,16 +23,16 @@ class gaia_db:
 
     def get_db(self):
         return self.db
-        
+
     def get_employees(self):
         return self.employees
-    
+
     def get_working_at(self):
         return self.working_at
-        
+
     def create_insert(self):
         self.employees, self.working_at = self.emp.create_person(self.employees, self.working_at)
-           
+
     def insert(self, users):
         for u in users:
             try:
@@ -40,20 +40,19 @@ class gaia_db:
                 print('Adding', u, '\n')
             except pymongo.errors.DuplicateKeyError:
                 print('Employee', u, 'yet present\n')
-        
-                
+
     def remove(self, value):
         return self.db.employees.remove({'name': value}, 1)
-                
+
     def find_name(self, value):
         return self.db.employees.find_one({'name': value})
-    
+
     def find_job(self, value):
         return self.db.employees.find_one({'job': value})['name']
-    
+
     def find_work(self, d):
         return d['working_on']
-    
+
     def meeting(self, list_time_data, name):
         timedata = util.dateTime(list_time_data)
         util.scheduling(timedata, self.employees, name)  # change
@@ -63,8 +62,7 @@ class gaia_db:
 ##############################################################################
 
 
-def go():
-
+def main():
     gaia = gaia_db()
 
     ### create fake employees ###
@@ -76,12 +74,10 @@ def go():
     ### query database for a job
     gaia.find_job('data_scientist')
 
-
     ### query database for employee ###
     george = gaia.find_name('george')
     norman = gaia.find_name('norman')
     manuel = gaia.find_name('manuel')
-
 
     print(george['name'], george['free_time']['2017']['6']['24'])
     print(norman['name'], norman['free_time']['2017']['6']['24'])
@@ -94,9 +90,8 @@ def go():
     ### check if employee is free for a meeting at timedate ###
     util.scheduling(timedata, employees, 'norman')
 
-    print ('all done')
+    print('all done')
 
 
-### uncomment this to run ###
-
-## go()
+if __name__ == "__main__":
+    main()
