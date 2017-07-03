@@ -5,8 +5,9 @@ import apiai
 import json
 
 from telepot.loop import MessageLoop
-from telepot.delegate import per_chat_id, create_open
+from telepot.delegate import per_chat_id, create_open, pave_event_space
 from telepot.namedtuple import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
+from collections import defaultdict
 
 import gaiaDB
 
@@ -16,19 +17,18 @@ import telepot.loop
 MANUEL_ID = 45571984
 CLIENT_ACCESS_TOKEN = 'bbb35a4d419f48ee84ae9800be4768f6'
 
+user_handler = {}
+user_answer = defaultdict(dict)
+
 
 class Secretary(telepot.helper.ChatHandler):
-    def __init__(self, seed_tuple, timeout):
-        import ipdb; ipdb.set_trace()
-        print(seed_tuple, timeout)
-        super(Secretary, self).__init__(seed_tuple, timeout)
+    def __init__(self, *args, **kwargs):
+        super(Secretary, self).__init__(*args, **kwargs)
         self.db = gaiaDB.gaia_db()
 
         # def handle(msg):
         #     self.handle_message(msg)
 
-        self.user_handler = {}
-        self.user_answer = {}
         # telepot.loop.MessageLoop(self.bot, handle).run_as_thread()
 
     def log_message(self, msg):
@@ -48,12 +48,14 @@ class Secretary(telepot.helper.ChatHandler):
         return parameters, action, response
 
     def on_message(self, msg):
+        global user_handler
+
         message_user_tid = msg['from']['id']
         user = self.db.find_by_tid(message_user_tid)
 
-        if user['tid'] in self.user_handler:
+        if user['tid'] in user_handler:
             print(user['name'], "was redirected by handler")
-            return self.user_handler[user['tid']](msg)
+            return user_handler[user['tid']](msg)
 
         try:
             msg_txt = msg['text']
@@ -67,21 +69,22 @@ class Secretary(telepot.helper.ChatHandler):
         self.bot.sendMessage(user['tid'], response)
 
         if action == 'look_for_specialist':
-            found_specialist = self.look_for_specialist(parameters['job'], querier=user)
-            if found_specialist:
-                self.bot.sendMessage(user['tid'], "{0} is available.".format(found_specialist))
+            specialists_found = self.look_for_specialist(parameters['job'], querier=user)
+            if specialists_found:
+                self.bot.sendMessage(user['tid'], "{0} is/are available.".format(",".join(sp['name'] for sp in specialists_found)))
             else:
                 self.bot.sendMessage(user['tid'], "I'm sorry, I didn't find any good match.")
         else:
             print("skipping", action)
 
     def look_for_specialist(self, job_title, querier):
-        found = False
+        employees = []
         for employee in self.db.find_by_job(job_title):
             found = self.query_employee(querier, employee)
             if found:
+                employees.append(employee)
                 break
-        return found
+        return employees
 
     def query_employee(self, querier, employee, query_msg=None):
         his_answer = False
@@ -111,19 +114,29 @@ class Secretary(telepot.helper.ChatHandler):
                 # TODO: handle random answers
                 employee_answer = "false"
 
-            self.user_answer[employee_id][querier['id']] = employee_answer
-            del self.user_handler[employee['tid']]
+            global user_answer
+            user_answer[employee_id][querier['tid']] = employee_answer
+            del user_handler[employee['tid']]
 
-        self.user_handler[employee['tid']] = query_response_handler
+        while querier['tid'] in user_answer[employee['tid']]:
+            print("you are asking too many questions fucktard")
+            time.sleep(1)
+
+        try:
+            user_answer[employee['tid']][querier['tid']] = ""
+        except KeyError:
+            user_answer[employee['tid']] = {querier['tid']: ""}
+
+        user_handler[employee['tid']] = query_response_handler
         self.bot.sendMessage(employee['tid'], query_msg, reply_markup=keyboard)
 
-        while self.user_handler[employee['tid']] is not None:
+        while employee['tid'] in user_handler:
             print("querier sleeping")
             time.sleep(1)
 
-        his_answer = self.user_answer[employee['tid']][querier['id']]
-        del self.user_answer[employee['tid']][querier['id']]
-        return his_answer
+        his_answer = user_answer[employee['tid']][querier['tid']]
+        del user_answer[employee['tid']][querier['tid']]
+        return his_answer == "yes"
 
 
 if __name__ == "__main__":
@@ -131,6 +144,7 @@ if __name__ == "__main__":
         KEY = fin.read()[:-1]
 
     bot = telepot.DelegatorBot(KEY, [
-        (per_chat_id(), create_open(Secretary, timeout=9999999)),
+        pave_event_space()(
+            per_chat_id(), create_open, Secretary, timeout=99999),
     ])
     MessageLoop(bot).run_forever()
