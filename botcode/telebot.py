@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import pprint
 import time
+import apiai
 import json
 from telepot.namedtuple import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 
@@ -19,6 +20,7 @@ class Secretary(object):
         self.bot = telepot.Bot(key)
 
         def handle(msg):
+            print(msg)
             self.handle_message(msg)
 
         self.user_handler = {}
@@ -46,6 +48,7 @@ class Secretary(object):
         user = self.db.find_by_tid(message_user_tid)
 
         if user['tid'] in self.user_handler:
+            print(user['name'], "was redirected by handler")
             return self.user_handler[user['tid']](msg)
 
         try:
@@ -60,7 +63,7 @@ class Secretary(object):
         self.bot.sendMessage(user['tid'], response)
 
         if action == 'look_for_specialist':
-            found_specialist = self.look_for_specialist(parameters['job'], querier=user['name'])
+            found_specialist = self.look_for_specialist(parameters['job'], querier=user)
             if found_specialist:
                 self.bot.sendMessage(user['tid'], "{0} is available.".format(found_specialist))
             else:
@@ -96,6 +99,7 @@ class Secretary(object):
             query_msg = "{} needs a {}. Are you available?".format(querier['name'], employee['job'])
 
         def query_response_handler(msg):
+            import ipdb; ipdb.set_trace()
             markup = ReplyKeyboardRemove()
             employee_id = msg['from']['id']
             self.bot.sendMessage(employee_id, "Ok, got it", reply_markup=markup)
@@ -116,6 +120,7 @@ class Secretary(object):
         self.bot.sendMessage(employee['tid'], query_msg, reply_markup=keyboard)
 
         while self.user_handler[employee['tid']] is not None:
+            print("querier sleeping")
             time.sleep(1)
 
         his_answer = self.user_answer[employee['tid']][querier['id']]

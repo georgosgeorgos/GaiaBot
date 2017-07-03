@@ -49,7 +49,7 @@ class gaia_db:
         return self.db.employees.find_one({'name': value})
 
     def find_by_tid(self, value):
-        return self.db.employees.find_one({'id': value})
+        return self.db.employees.find_one({'tid': value})
 
     def find_by_job(self, value):
         return self.db.employees.find({'job': value})
@@ -73,7 +73,7 @@ def main():
     gaia.insert(employees)
 
     ### query database for a job
-    gaia.find_job('data_scientist')
+    gaia.find_by_job('data_scientist')
 
     ### query database for employee ###
     george = gaia.find_name('george')
