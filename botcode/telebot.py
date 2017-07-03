@@ -3,6 +3,8 @@ import pprint
 import time
 import apiai
 import json
+
+from telepot.delegate import per_chat_id, create_open
 from telepot.namedtuple import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 
 import gaiaDB
@@ -14,18 +16,20 @@ MANUEL_ID = 45571984
 CLIENT_ACCESS_TOKEN = 'bbb35a4d419f48ee84ae9800be4768f6'
 
 
-class Secretary(object):
-    def __init__(self, key):
-        self.db = gaiaDB.gaia_db()
-        self.bot = telepot.Bot(key)
 
-        def handle(msg):
-            print(msg)
-            self.handle_message(msg)
+class MessageCounter(telepot.helper.ChatHandler):
+
+class Secretary(telepot.helper.ChatHandler):
+    def __init__(self, seed_tuple, timeout):
+        super(Secretary, self).__init__(seed_tuple, timeout)
+        self.db = gaiaDB.gaia_db()
+
+        # def handle(msg):
+        #     self.handle_message(msg)
 
         self.user_handler = {}
         self.user_answer = {}
-        telepot.loop.MessageLoop(self.bot, handle).run_as_thread()
+        # telepot.loop.MessageLoop(self.bot, handle).run_as_thread()
 
     def log_message(self, msg):
         self.bot.sendMessage(MANUEL_ID, pprint.pformat(msg))
@@ -43,7 +47,7 @@ class Secretary(object):
         response = parsed_json['result']['fulfillment']['speech']
         return parameters, action, response
 
-    def handle_message(self, msg):
+    def on_message(self, msg):
         message_user_tid = msg['from']['id']
         user = self.db.find_by_tid(message_user_tid)
 
@@ -70,11 +74,6 @@ class Secretary(object):
                 self.bot.sendMessage(user['tid'], "I'm sorry, I didn't find any good match.")
         else:
             print("skipping", action)
-
-    def spin(self):
-        while True:
-            self.bot.sendMessage(MANUEL_ID, "spinning")
-            time.sleep(500)
 
     def look_for_specialist(self, job_title, querier):
         found = False
@@ -130,6 +129,9 @@ class Secretary(object):
 
 if __name__ == "__main__":
     with open("api_key") as fin:
-        key = fin.read()[:-1]
-    bot = Secretary(key)
-    bot.spin()
+        KEY = fin.read()[:-1]
+
+    bot = telepot.DelegatorBot(KEY, [
+        (per_chat_id(), create_open(Secretary, timeout=9999999)),
+    ])
+    bot.notifyOnMessage(run_forever=True)
