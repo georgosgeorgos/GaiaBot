@@ -5,10 +5,8 @@ import json
 
 class gaia_db:
     def __init__(self):
-
         with open('DB_keys') as f:
             DBKEY = f.read()[:-1]
-        print(DBKEY)
 
         self.uri = DBKEY
         self.client = pymongo.MongoClient(self.uri)
