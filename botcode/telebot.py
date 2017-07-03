@@ -4,6 +4,7 @@ import time
 import apiai
 import json
 
+from telepot.loop import MessageLoop
 from telepot.delegate import per_chat_id, create_open
 from telepot.namedtuple import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup
 
@@ -16,11 +17,10 @@ MANUEL_ID = 45571984
 CLIENT_ACCESS_TOKEN = 'bbb35a4d419f48ee84ae9800be4768f6'
 
 
-
-class MessageCounter(telepot.helper.ChatHandler):
-
 class Secretary(telepot.helper.ChatHandler):
     def __init__(self, seed_tuple, timeout):
+        import ipdb; ipdb.set_trace()
+        print(seed_tuple, timeout)
         super(Secretary, self).__init__(seed_tuple, timeout)
         self.db = gaiaDB.gaia_db()
 
@@ -98,7 +98,6 @@ class Secretary(telepot.helper.ChatHandler):
             query_msg = "{} needs a {}. Are you available?".format(querier['name'], employee['job'])
 
         def query_response_handler(msg):
-            import ipdb; ipdb.set_trace()
             markup = ReplyKeyboardRemove()
             employee_id = msg['from']['id']
             self.bot.sendMessage(employee_id, "Ok, got it", reply_markup=markup)
@@ -134,4 +133,4 @@ if __name__ == "__main__":
     bot = telepot.DelegatorBot(KEY, [
         (per_chat_id(), create_open(Secretary, timeout=9999999)),
     ])
-    bot.notifyOnMessage(run_forever=True)
+    MessageLoop(bot).run_forever()
