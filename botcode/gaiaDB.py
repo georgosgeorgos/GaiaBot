@@ -29,8 +29,13 @@ class gaia_db:
     def get_working_at(self):
         return self.working_at
 
-    def create_insert(self):
-        self.employees, self.working_at = self.emp.create_person(self.employees, self.working_at)
+    def create(self, tid):
+        day = {str(i): list() for i in range(1, 32)}
+        months = {str(i): copy.deepcopy(day) for i in range(1, 13)}
+        date = {'2017': copy.deepcopy(months)}
+        pers = {'name': '', 'tid': tid, 'job': '', 'team': [], 'free_time': copy.deepcopy(date),
+                'mail': '', 'working_on': '', 'updates': 1, 'office': ''}
+        return pers
 
     def insert(self, users):
         for u in users:

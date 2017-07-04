@@ -50,8 +50,34 @@ class Secretary(telepot.helper.ChatHandler):
     def on_message(self, msg):
         global user_handler
 
+        ### new part ###
+
         message_user_tid = msg['from']['id']
+        update_id = msg['message_id']
         user = self.db.find_by_tid(message_user_tid)
+
+        if user == None:  ## if user is a new user
+
+            self.bot.sendMessage(message_user_tid, 'Hi! You are a new employee...nice to meet you!')
+            self.bot.sendMessage(message_user_tid, 'tell me something about you')
+
+            user = self.db.create(message_user_tid)
+
+            bot.sendMessage(message_user_tid, 'insert name: ')
+            while msg['message_id'] == update_id:
+                user['name'] = msg['text']
+
+            update_id = msg['message_id']
+            bot.sendMessage(message_user_tid, 'insert job: ')
+            while msg['message_id'] == update_id:
+                user['job'] = msg['text']
+
+            update_id = msg['message_id']
+            bot.sendMessage(message_user_tid, 'insert mail: ')
+            while msg['message_id'] == update_id:
+                user['mail'] = msg['text']
+
+            self.db.insert(user)
 
         if user['tid'] in user_handler:
             print(user['name'], "was redirected by handler")
