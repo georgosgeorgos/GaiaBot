@@ -168,14 +168,17 @@ class Secretary(telepot.helper.ChatHandler):
 
         timeleft = 15
         while employee['tid'] in user_handler and timeleft > 0:
-            print("querier sleeping")
+            print("querier sleeping", timeleft)
             time.sleep(1)
             timeleft -= 1
 
         his_answer = user_answer[employee['tid']][querier['tid']]
         del user_answer[employee['tid']][querier['tid']]
+        del user_handler[employee['tid']]
         if his_answer == "":
             print("TIMEOUT", employee)
+            markup = ReplyKeyboardRemove()
+            self.bot.sendMessage(employee['tid'], "nvm you were too sloow", reply_markup=markup)
         return his_answer == "yes"
 
 
