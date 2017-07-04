@@ -53,7 +53,6 @@ class Secretary(telepot.helper.ChatHandler):
         ### new part ###
 
         message_user_tid = msg['from']['id']
-        update_id = msg['message_id']
         user = self.db.find_by_tid(message_user_tid)
 
         if user is None:  # if user is a new user
@@ -63,21 +62,25 @@ class Secretary(telepot.helper.ChatHandler):
             # TODO: replace 4 different fucntions with a signle parametric one
             def handle_user_email(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
-                user['job'] = msg['text']
-                user = self.db.create(message_user_tid)
+                user['email'] = msg['text']
+                _ = self.db.update_one(user)
+
                 del user_handler[message_user_tid]
                 bot.sendMessage(message_user_tid, "registered!")
 
             def handle_user_job(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
                 user['job'] = msg['text']
+                _ = self.db.update_one(user)
+
                 user_handler[message_user_tid] = handle_user_email
                 bot.sendMessage(message_user_tid, "your email:")
 
             def handle_user_rename(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
                 user['name'] = msg['text']
-                self.db.update(user)
+                _ = self.db.update_one(user)
+
                 user_handler[message_user_tid] = handle_user_job
                 bot.sendMessage(message_user_tid, "your job title:")
 
@@ -88,7 +91,7 @@ class Secretary(telepot.helper.ChatHandler):
 
 
         elif user['tid'] in user_handler:
-            print(user['name'], "was redirected by handler")
+            print(user['tid'], "was redirected by handler")
             return user_handler[user['tid']](msg)
 
         try:
