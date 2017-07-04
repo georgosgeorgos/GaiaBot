@@ -56,30 +56,39 @@ class Secretary(telepot.helper.ChatHandler):
         update_id = msg['message_id']
         user = self.db.find_by_tid(message_user_tid)
 
-        if user == None:  ## if user is a new user
+        if user == None: # if user is a new user
+            self.bot.sendMessage(message_user_tid, "Hi! You are a new employee...nice to meet you!")
+            self.bot.sendMessage(message_user_tid, "tell me something about you")
 
-            self.bot.sendMessage(message_user_tid, 'Hi! You are a new employee...nice to meet you!')
-            self.bot.sendMessage(message_user_tid, 'tell me something about you')
-
-            user = self.db.create(message_user_tid)
-
-            bot.sendMessage(message_user_tid, 'insert name: ')
-            while msg['message_id'] == update_id:
-                user['name'] = msg['text']
-
-            update_id = msg['message_id']
-            bot.sendMessage(message_user_tid, 'insert job: ')
-            while msg['message_id'] == update_id:
+            # TODO: replace 4 different fucntions with a signle parametric one
+            def handle_user_email(msg):
+                message_user_tid = msg['from']['id']
                 user['job'] = msg['text']
+                user = self.db.create(message_user_tid)
+                del user_handler[message_user_tid]
+                bot.sendMessage(message_user_tid, "registered!")
 
-            update_id = msg['message_id']
-            bot.sendMessage(message_user_tid, 'insert mail: ')
-            while msg['message_id'] == update_id:
-                user['mail'] = msg['text']
+            def handle_user_job(msg):
+                message_user_tid = msg['from']['id']
+                user = self.db.find_by_tid(message_user_tid)
+                user['job'] = msg['text']
+                user_handler[message_user_tid] = handle_user_email
+                bot.sendMessage(message_user_tid, "your email:")
 
-            self.db.insert(user)
+            def handle_user_rename(msg):
+                message_user_tid = msg['from']['id']
+                user = self.db.find_by_tid(message_user_tid)
+                user['name'] = msg['text']
+                self.db.update(user)
+                user_handler[message_user_tid] = handle_user_job
+                bot.sendMessage(message_user_tid, "your job title:")
 
-        if user['tid'] in user_handler:
+            user_handler[message_user_tid] = handle_user_rename
+            self.db.employees.insert_one({'tid': message_user_tid})
+            bot.sendMessage(message_user_tid, "what's your name")
+
+
+        elif user['tid'] in user_handler:
             print(user['name'], "was redirected by handler")
             return user_handler[user['tid']](msg)
 
