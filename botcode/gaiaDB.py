@@ -38,12 +38,15 @@ class gaia_db:
         return pers
 
     def insert(self, users):
-        for u in users:
-            try:
-                self.db.employees.insert_one(users[u])
-                print('Adding', u, '\n')
-            except pymongo.errors.DuplicateKeyError:
-                print('Employee', u, 'yet present\n')
+        for user in users.values():
+            self.insert_one(user)
+
+    def insert_one(self, user):
+        try:
+            self.db.employees.insert_one(user)
+            print('Adding', user, '\n')
+        except pymongo.errors.DuplicateKeyError:
+            print('Employee', user, 'yet present\n')
 
     def remove(self, value):
         return self.db.employees.remove({'name': value}, 1)
