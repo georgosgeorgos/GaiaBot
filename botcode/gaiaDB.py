@@ -49,7 +49,7 @@ class gaia_db:
             print('Employee', user, 'yet present\n')
 
     def update_one(self, user):
-        self.db.employees.find_one_and_update({'_id': user['_id']}, user)
+        self.db.employees.find_one_and_update({'_id': user['_id']}, {"$set": user})
         print('updating', user, '\n')
 
     def remove(self, value):
