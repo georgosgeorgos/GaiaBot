@@ -53,16 +53,16 @@ class gaia_db:
         print('updating', user, '\n')
 
     def remove(self, value):
-        return self.db.employees.remove({'name': value}, 1)
+        return self.db.employees.remove({'name': value.lower()}, 1)
 
     def find_name(self, value):
-        return self.db.employees.find_one({'name': value})
+        return self.db.employees.find_one({'name': value.lower()})
 
     def find_by_tid(self, value):
         return self.db.employees.find_one({'tid': value})
 
     def find_by_job(self, value):
-        return self.db.employees.find({'job': value})
+        return self.db.employees.find({'job': value.lower()})
 
     def meeting(self, list_time_data, name):
         timedata = util.dateTime(list_time_data)

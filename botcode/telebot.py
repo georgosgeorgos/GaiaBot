@@ -42,7 +42,7 @@ class Secretary(telepot.helper.ChatHandler):
         reply = response.read()
         reply = reply.decode("utf-8")
         parsed_json = json.loads(reply)
-        action = parsed_json['result']['action']
+        action = parsed_json['result']['action'].lower()
         parameters = parsed_json['result']['parameters']
         response = parsed_json['result']['fulfillment']['speech']
         return parameters, action, response
@@ -59,7 +59,7 @@ class Secretary(telepot.helper.ChatHandler):
             # TODO: replace 4 different fucntions with a signle parametric one
             def handle_user_email(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
-                user['email'] = msg['text']
+                user['email'] = msg['text'].lower()
                 self.db.update_one(user)
 
                 del user_handler[message_user_tid]
@@ -67,7 +67,7 @@ class Secretary(telepot.helper.ChatHandler):
 
             def handle_user_job(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
-                user['job'] = msg['text']
+                user['job'] = msg['text'].lower()
                 self.db.update_one(user)
 
                 user_handler[message_user_tid] = handle_user_email
@@ -75,7 +75,7 @@ class Secretary(telepot.helper.ChatHandler):
 
             def handle_user_rename(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
-                user['name'] = msg['text']
+                user['name'] = msg['text'].lower()
                 self.db.update_one(user)
 
                 user_handler[message_user_tid] = handle_user_job
@@ -104,7 +104,7 @@ class Secretary(telepot.helper.ChatHandler):
         self.bot.sendMessage(user['tid'], response)
 
         if action == 'look_for_specialist':
-            specialists_found = self.look_for_specialist(parameters['job'], querier=user)
+            specialists_found = self.look_for_specialist(parameters['job'].lower(), querier=user)
             if specialists_found:
                 self.bot.sendMessage(user['tid'],
                                      "{0} is/are available.".format(",".join(sp['name'] for sp in specialists_found)))
