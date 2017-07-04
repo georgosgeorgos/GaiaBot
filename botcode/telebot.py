@@ -56,39 +56,37 @@ class Secretary(telepot.helper.ChatHandler):
         user = self.db.find_by_tid(message_user_tid)
 
         if user is None:  # if user is a new user
-            self.bot.sendMessage(message_user_tid, "Hi! You are a new employee...nice to meet you!")
-            self.bot.sendMessage(message_user_tid, "tell me something about you")
-
             # TODO: replace 4 different fucntions with a signle parametric one
             def handle_user_email(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
                 user['email'] = msg['text']
-                _ = self.db.update_one(user)
+                self.db.update_one(user)
 
                 del user_handler[message_user_tid]
-                bot.sendMessage(message_user_tid, "registered!")
+                self.bot.sendMessage(message_user_tid, "registered!")
 
             def handle_user_job(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
                 user['job'] = msg['text']
-                _ = self.db.update_one(user)
+                self.db.update_one(user)
 
                 user_handler[message_user_tid] = handle_user_email
-                bot.sendMessage(message_user_tid, "your email:")
+                self.bot.sendMessage(message_user_tid, "your email:")
 
             def handle_user_rename(msg):
                 user = self.db.find_by_tid(msg['from']['id'])
                 user['name'] = msg['text']
-                _ = self.db.update_one(user)
+                self.db.update_one(user)
 
                 user_handler[message_user_tid] = handle_user_job
-                bot.sendMessage(message_user_tid, "your job title:")
+                self.bot.sendMessage(message_user_tid, "your job title:")
 
             user_handler[message_user_tid] = handle_user_rename
             self.db.insert_one({'tid': message_user_tid})
-            bot.sendMessage(message_user_tid, "what's your name")
+            self.bot.sendMessage(message_user_tid, "Hi! You are a new employee...nice to meet you!")
+            self.bot.sendMessage(message_user_tid, "tell me something about you")
+            self.bot.sendMessage(message_user_tid, "what's your name")
             return
-
 
         elif user['tid'] in user_handler:
             print(user['tid'], "was redirected by handler")
@@ -168,21 +166,28 @@ class Secretary(telepot.helper.ChatHandler):
         user_handler[employee['tid']] = query_response_handler
         self.bot.sendMessage(employee['tid'], query_msg, reply_markup=keyboard)
 
-        while employee['tid'] in user_handler:
+        timeleft = 15
+        while employee['tid'] in user_handler and timeleft > 0:
             print("querier sleeping")
             time.sleep(1)
+            timeleft -= 1
 
         his_answer = user_answer[employee['tid']][querier['tid']]
         del user_answer[employee['tid']][querier['tid']]
+        if his_answer == "":
+            print("TIMEOUT", employee)
         return his_answer == "yes"
 
 
-if __name__ == "__main__":
+def main():
     with open("api_key") as fin:
         KEY = fin.read()[:-1]
-
     bot = telepot.DelegatorBot(KEY, [
         pave_event_space()(
             per_chat_id(), create_open, Secretary, timeout=99999),
     ])
     MessageLoop(bot).run_forever()
+
+
+if __name__ == "__main__":
+    main()
